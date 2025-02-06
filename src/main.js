@@ -19,9 +19,8 @@ let config = {
 }
 let game = new Phaser.Game(config)
 let highScore = 0;
-let timer = 0;
-let tick = 1000 //define a second of gametime
-let keyUP, keyDOWN, keyJUMP 
+let bufferedJump = 0; //Allows for buffered jumps making moevemnt feel smoother
+let keyUP, keyDOWN, keyJUMP, keyLEFT, keyRIGHT
 
 
 let widthUI = game.config.width / 100 //Size units for changing resolution
