@@ -21,22 +21,24 @@ class Play extends Phaser.Scene {
 
         */
 
-        this.player = this.physics.add.sprite(widthUI*10, heightUI*50, 'runner').setScale(.5,1).setMaxVelocity(225);
+        this.player = this.physics.add.sprite(widthUI*10, heightUI*30, 'runner').setScale(.5,1).setMaxVelocity(250);
 
 
 
-        this.building0 = this.physics.add.sprite(0, heightUI*100, 'building').setScale(6,10).setOrigin(0, 1).setPushable(false); //I tried working with groups for the buildings but doing the looping logic and adding variety over time became tedious since I was getting confused by acessing the group
-        this.building1 = this.physics.add.sprite(widthUI*25, heightUI*100, 'building').setScale(6,10).setOrigin(0, 1).setPushable(false); 
-        this.building2 = this.physics.add.sprite(widthUI*50, heightUI*100, 'building').setScale(6,10).setOrigin(0, 1).setPushable(false);
-        this.building3 = this.physics.add.sprite(widthUI*75, heightUI*100, 'building').setScale(6,10).setOrigin(0, 1).setPushable(false);
+        this.building0 = this.physics.add.sprite(0, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false); //I tried working with groups for the buildings but doing the looping logic and adding variety over time became tedious since I was getting confused by acessing the group
+        this.building1 = this.physics.add.sprite(widthUI*22, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false); 
+        this.building2 = this.physics.add.sprite(widthUI*44, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
+        this.building3 = this.physics.add.sprite(widthUI*66, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
+        this.building4 = this.physics.add.sprite(widthUI*88, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
 
         this.physics.add.collider(this.player, this.building0);
         this.physics.add.collider(this.player, this.building1);
         this.physics.add.collider(this.player, this.building2);
         this.physics.add.collider(this.player, this.building3);
+        this.physics.add.collider(this.player, this.building4);
 
 
-        this.player.setGravity(0,100);
+        this.player.setGravity(0,150);
     
 
 
@@ -60,34 +62,59 @@ class Play extends Phaser.Scene {
     update() {
         this.starfield.tilePositionX += 4
 
-        this.building0.x -=1
+        this.building0.x -= gameSpeed
         if (this.building0.x < -200){
             this.building0.x = widthUI * 100
+            let lastY = this.building4.y  
+            let rand = ((Math.random() * 200) - 100) + lastY
+            console.log(rand)
+            this.building0.y = this.checkRand(rand)
         }
-        this.building1.x -=1
+        this.building1.x -= gameSpeed
         if (this.building1.x < -200){
             this.building1.x = widthUI * 100
+            let lastY = this.building0.y  
+            let rand = ((Math.random() * 200) - 100) + lastY
+            this.building1.y = this.checkRand(rand)
+            console.log(rand)
         }
-        this.building2.x -=1
+        this.building2.x -= gameSpeed
         if (this.building2.x < -200){
             this.building2.x = widthUI * 100
+            let lastY = this.building1.y  
+            let rand = ((Math.random() * 200) - 100) + lastY
+            this.building2.y = this.checkRand(rand)
+            console.log(rand)
         }
-        this.building3.x -=1
-        if (this.building2.x < -200){
-            this.building2.x = widthUI * 100
+        this.building3.x -= gameSpeed
+        if (this.building3.x < -200){
+            this.building3.x = widthUI * 100
+            let lastY = this.building2.y  
+            let rand = ((Math.random() * 200) - 100) + lastY
+            this.building3.y = this.checkRand(rand)
+        }
+        this.building4.x -= gameSpeed
+        if (this.building4.x < -200){
+            this.building4.x = widthUI * 100
+            this.building4.x = widthUI * 100
+            let lastY = this.building3.y  
+            let rand = ((Math.random() * 200) - 100) + lastY
+            this.building4.y = this.checkRand(rand)
+            gameSpeed += .5
         }
 
 
 
 
-        this.player.x -= 1
         //Controls are defined in a module scenes i.e. spaceship.js
         this.physics.world.singleStep();
+        
 
+        let jumpPower = 450
 
         if (Phaser.Input.Keyboard.JustDown(keyJUMP)){
             if (this.player.body.velocity.y == 0){
-                this.player.setVelocityY(-175);
+                this.player.setVelocityY(-jumpPower);
                 bufferedJump = 0;
             } else {
                 bufferedJump = 15;
@@ -99,15 +126,15 @@ class Play extends Phaser.Scene {
             bufferedJump -= 1
         }
         if (bufferedJump  != 0 && this.player.body.velocity.y == 0){
-            this.player.setVelocityY(-175);
+            this.player.setVelocityY(-jumpPower);
             bufferedJump = 0;
         }
 
         if (keyRIGHT.isDown){
-            this.player.setAccelerationX(275)
+            this.player.setAccelerationX(400)
         }
         else if (keyLEFT.isDown){
-            this.player.setAccelerationX(-275)
+            this.player.setAccelerationX(-400)
         }
         else if (this.player.body.velocity.x > 10) {
     
@@ -131,6 +158,16 @@ class Play extends Phaser.Scene {
 
         
     }
+
+    checkRand(rand){
+        if (rand > heightUI * 90){
+            rand = heightUI * 90
+        }
+        if (rand < heightUI * 20){
+            rand = heightUI * 20
+        }
+        return rand
+    } 
 
     //Collision function (One for enemy one for wall one for floor )
 

@@ -20,6 +20,7 @@ let config = {
 let game = new Phaser.Game(config)
 let highScore = 0;
 let bufferedJump = 0; //Allows for buffered jumps making moevemnt feel smoother
+let gameSpeed = 2
 let keyUP, keyDOWN, keyJUMP, keyLEFT, keyRIGHT
 
 
