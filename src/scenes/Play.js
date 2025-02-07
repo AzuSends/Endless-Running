@@ -22,6 +22,13 @@ class Play extends Phaser.Scene {
         */
 
         this.player = this.physics.add.sprite(widthUI*10, heightUI*30, 'runner').setScale(.5,1).setMaxVelocity(250);
+        this.player.setCollideWorldBounds()
+        this.physics.world.on('collide', this.handleWorldBoundsCollision, this);
+
+
+        this.enemy = this.physics.add.sprite(0,0,'enemy').setScale(.5,.5).setMaxVelocity(this.enemySpeed * 2.5).setOrigin(1,1);
+        this.enemySpeed = 50
+        this.enemyAlive = true
 
 
 
@@ -36,6 +43,10 @@ class Play extends Phaser.Scene {
         this.physics.add.collider(this.player, this.building2);
         this.physics.add.collider(this.player, this.building3);
         this.physics.add.collider(this.player, this.building4);
+
+        
+
+
 
 
         this.player.setGravity(0,150);
@@ -67,7 +78,6 @@ class Play extends Phaser.Scene {
             this.building0.x = widthUI * 100
             let lastY = this.building4.y  
             let rand = ((Math.random() * 200) - 100) + lastY
-            console.log(rand)
             this.building0.y = this.checkRand(rand)
         }
         this.building1.x -= gameSpeed
@@ -76,7 +86,6 @@ class Play extends Phaser.Scene {
             let lastY = this.building0.y  
             let rand = ((Math.random() * 200) - 100) + lastY
             this.building1.y = this.checkRand(rand)
-            console.log(rand)
         }
         this.building2.x -= gameSpeed
         if (this.building2.x < -200){
@@ -84,7 +93,6 @@ class Play extends Phaser.Scene {
             let lastY = this.building1.y  
             let rand = ((Math.random() * 200) - 100) + lastY
             this.building2.y = this.checkRand(rand)
-            console.log(rand)
         }
         this.building3.x -= gameSpeed
         if (this.building3.x < -200){
@@ -100,7 +108,8 @@ class Play extends Phaser.Scene {
             let lastY = this.building3.y  
             let rand = ((Math.random() * 200) - 100) + lastY
             this.building4.y = this.checkRand(rand)
-            gameSpeed += .5
+            this.difficultyUp()
+
         }
 
 
@@ -108,6 +117,18 @@ class Play extends Phaser.Scene {
 
         //Controls are defined in a module scenes i.e. spaceship.js
         this.physics.world.singleStep();
+        this.updateEnemyTarget()
+
+        
+
+
+
+        let gameOver = this.physics.world.overlap(this.player, this.enemy); 
+        if (gameOver){
+            this.gameOver()
+        }
+
+        
         
 
         let jumpPower = 450
@@ -122,7 +143,6 @@ class Play extends Phaser.Scene {
             
         }
         if (bufferedJump != 0){
-            console.log(bufferedJump)
             bufferedJump -= 1
         }
         if (bufferedJump  != 0 && this.player.body.velocity.y == 0){
@@ -168,6 +188,46 @@ class Play extends Phaser.Scene {
         }
         return rand
     } 
+
+    difficultyUp() {
+        gameSpeed += .5
+        this.enemySpeed += 10
+        this.enemyAlive = true
+        this.enemy.setMaxVelocity(this.enemySpeed * 2.5)
+
+
+    }
+
+    updateEnemyTarget(){
+        if(this.enemy.x > this.player.x){
+            this.enemy.setAccelerationX(-this.enemySpeed)
+        } else{
+            this.enemy.setAccelerationX(this.enemySpeed)
+        }
+        
+        if(this.enemy.y > this.player.y){
+            this.enemy.setAccelerationY(-this.enemySpeed)
+        } else{
+            this.enemy.setAccelerationY(this.enemySpeed)
+        }
+    }
+
+    gameOver(){
+        this.player.x = 0
+        this.player.y = 0
+    }
+
+    handleWorldBoundsCollision(gameObject, otherGameObject) {
+        console.log('Collided with world bounds!');
+        if (gameObject === this.player && otherGameObject.body.worldBounds) {
+          console.log('Collided with world bounds!');
+          gameObject.setTint(0xff0000); // Example: tint the colliding object red
+          // ... other actions ...
+        }
+  
+    }
+
+
 
     //Collision function (One for enemy one for wall one for floor )
 

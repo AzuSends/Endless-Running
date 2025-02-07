@@ -18,6 +18,7 @@ let config = {
     },
 }
 let game = new Phaser.Game(config)
+let gameOverCondition = false;
 let highScore = 0;
 let bufferedJump = 0; //Allows for buffered jumps making moevemnt feel smoother
 let gameSpeed = 2
