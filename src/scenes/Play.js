@@ -1,34 +1,88 @@
+/* TODO:
+Include some metric of accomplishment that a player can improve over time, e.g., score, survival time, etc. (1)
+Include in-game credits for all roles, assets, music, etc. (1)
+*/
 class Play extends Phaser.Scene {
     constructor() {
         super("playScene")
     }
     
     create() {
+        this.anims.create({
+            key: 'runR',
+            frames: this.anims.generateFrameNumbers('runner', {
+                start: 1, 
+                end: 2 
+            }),
+            frameRate: 10, 
+            repeat: 0 
+        });
+        this.anims.create({
+            key: 'runL',
+            frames: this.anims.generateFrameNumbers('runner', {
+                start: 4, 
+                end: 5 
+            }),
+            frameRate: 10, 
+            repeat: 0 
+        });
 
+        this.anims.create({
+            key: 'standR',
+            frames: this.anims.generateFrameNumbers('runner', {
+                start: 0, 
+                end: 0 
+            }),
+            frameRate: 7, 
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'standL',
+            frames: this.anims.generateFrameNumbers('runner', {
+                start: 3, 
+                end: 3 
+            }),
+            frameRate: 7, 
+            repeat: 0
+        });
+
+        this.bgm = this.sound.add('bgm', {
+            volume: 0.5,
+            loop: true   
+        });
+        this.diffUp = this.sound.add('diffUp', {
+            volume: 0.30, 
+            loop: false   
+        });
+        this.jump = this.sound.add('jump', {
+            volume: 0.12, 
+            loop: false   
+        });
+        this.gameEnd = this.sound.add('gameEnd', {
+            volume: 0.60, 
+            loop: false   
+        });
+        this.select = this.sound.add('select', {
+            volume: 0.30, 
+            loop: false   
+        });
+
+        this.select.play();
+        
+        
         this.starfield = this.add.tileSprite(0, 0, 1280, 720, 'starfield').setOrigin(0, 0)
-        /*this.groundTemp = new Building(this, 0, heightUI*100, 'building').setOrigin(0, 1)
-        this.groundTemp.setScale(6,10)
-        var groundPhysicsObject = this.physics.add.existing(this.groundTemp, 1);
-        var groundPhys = groundPhysicsObject.body;
 
 
-        this.playerSprite = new Runner(this, widthUI*10, heightUI*50, 'runner').setOrigin(0.5, 0)
-        this.playerSprite.setScale(.5,1)
-        var playerPhysicsObject = this.physics.add.existing(this.playerSprite, 0);
-        var playerPhys = playerPhysicsObject.body;
-        playerPhys.setEnable();
-        playerPhys.setVelocityY(0);
+        this.player = this.physics.add.sprite(widthUI*5, heightUI*50, 'runner').setScale(.5,.5).setMaxVelocity(0);
+        this.player.grounded = true
+        this.player.facing = "right"
+        this.player.alive = 1
+        
 
-        */
-
-        this.player = this.physics.add.sprite(widthUI*10, heightUI*30, 'runner').setScale(.5,1).setMaxVelocity(250);
-        this.player.setCollideWorldBounds()
-        this.physics.world.on('collide', this.handleWorldBoundsCollision, this);
-
-
-        this.enemy = this.physics.add.sprite(0,0,'enemy').setScale(.5,.5).setMaxVelocity(this.enemySpeed * 2.5).setOrigin(1,1);
         this.enemySpeed = 50
+        this.enemy = this.physics.add.sprite(0,0,'enemy').setScale(.5,.5).setMaxVelocity(0).setOrigin(1,1);
         this.enemyAlive = true
+        
 
 
 
@@ -38,13 +92,40 @@ class Play extends Phaser.Scene {
         this.building3 = this.physics.add.sprite(widthUI*66, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
         this.building4 = this.physics.add.sprite(widthUI*88, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
 
-        this.physics.add.collider(this.player, this.building0);
-        this.physics.add.collider(this.player, this.building1);
-        this.physics.add.collider(this.player, this.building2);
-        this.physics.add.collider(this.player, this.building3);
-        this.physics.add.collider(this.player, this.building4);
+        this.physics.add.collider(this.player, this.building0, this.ground);
+        this.physics.add.collider(this.player, this.building1, this.ground);
+        this.physics.add.collider(this.player, this.building2, this.ground);
+        this.physics.add.collider(this.player, this.building3, this.ground);
+        this.physics.add.collider(this.player, this.building4, this.ground);
+        this.physics.add.collider(this.player, this.enemy, this.gameOverEnemyHandler);
 
-        
+        this.textConfig = {
+            fontFamily: 'serif',
+            fontSize: '28px',
+            color: '#FFFFFF',
+            align: 'right',
+            padding: {
+              top: 5,
+              bottom: 5,
+            },
+            fixedWidth: 0
+        }
+        this.text1 = this.add.text(game.config.width/2, game.config.height/2, 'Press ←→ to move and ↑ to jump', this.textConfig).setOrigin(0.5)
+        this.text2 = this.add.text(game.config.width/2, game.config.height/2, 'Avoid the enemy and try to get as far as you can!', this.textConfig).setOrigin(0.5)
+        this.text2.alpha = 0
+        this.scrollSpeed = 0
+        this.clock = this.time.delayedCall(3000, () => {
+            this.text1.alpha = 0;
+            this.text2.alpha = 1;   
+        }, null, this)
+        this.clock = this.time.delayedCall(6000, () => {
+            this.text2.alpha = 0;
+            gameSpeed = 2
+            this.player.setMaxVelocity(250)
+            this.enemy.setMaxVelocity(this.enemySpeed * 2.5)
+            this.scrollSpeed = 1
+            this.bgm.play()
+        }, null, this)
 
 
 
@@ -56,22 +137,20 @@ class Play extends Phaser.Scene {
         keyJUMP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
+        keyRESET = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
 
 
 
-        //Build scene assests (Load background, character, enemies, etc)
-        //Normalize sizes screen relative sizes here
-
-        //Define gameplay keys
-
-        //Define gameplay variables (Non-global stuff)
-
-
-        //Define scene text and text config
+       
         console.log("Play scene loaded")
     }
     update() {
-        this.starfield.tilePositionX += 4
+        if (this.player.alive == 0){
+            this.gameOver(this.player)
+            this.player.alive = 1
+            
+        }
+        this.starfield.tilePositionX += this.scrollSpeed
 
         this.building0.x -= gameSpeed
         if (this.building0.x < -200){
@@ -115,7 +194,6 @@ class Play extends Phaser.Scene {
 
 
 
-        //Controls are defined in a module scenes i.e. spaceship.js
         this.physics.world.singleStep();
         this.updateEnemyTarget()
 
@@ -123,9 +201,14 @@ class Play extends Phaser.Scene {
 
 
 
-        let gameOver = this.physics.world.overlap(this.player, this.enemy); 
+        let gameOver = this.physics.world.collide(this.player, this.enemy); 
         if (gameOver){
-            this.gameOver()
+            this.gameOver(this.player)
+        }
+
+        if (this.player.x < 0 || this.player.y > heightUI * 100){
+            this.gameOver(this.player)
+
         }
 
         
@@ -135,26 +218,51 @@ class Play extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(keyJUMP)){
             if (this.player.body.velocity.y == 0){
+                this.jump.play();
                 this.player.setVelocityY(-jumpPower);
+                this.player.grounded = false
+                this.player.play("standR")
+                this.player.stop();
                 bufferedJump = 0;
             } else {
                 bufferedJump = 15;
             }
             
         }
+        if (Phaser.Input.Keyboard.JustDown(keyRESET)){
+            this.bgm.stop();
+            gameSpeed = 0
+            this.scrollSpeed = 0
+            this.scene.restart();
+            
+        }
         if (bufferedJump != 0){
             bufferedJump -= 1
         }
         if (bufferedJump  != 0 && this.player.body.velocity.y == 0){
+            this.jump.play();
             this.player.setVelocityY(-jumpPower);
+            this.player.grounded = false
+            this.player.play("standR")
+            this.player.stop();
             bufferedJump = 0;
         }
 
         if (keyRIGHT.isDown){
             this.player.setAccelerationX(400)
+            this.player.facing = "right"
+            if (!this.player.anims.isPlaying) {
+                this.player.play("standR")
+                this.player.stop();
+            }
         }
         else if (keyLEFT.isDown){
             this.player.setAccelerationX(-400)
+            if (!this.player.anims.isPlaying) {
+                this.player.play("standL")
+                this.player.stop();
+            }
+            this.player.facing = "left"
         }
         else if (this.player.body.velocity.x > 10) {
     
@@ -166,15 +274,19 @@ class Play extends Phaser.Scene {
         } else{
             this.player.setVelocityX(0)  
             this.player.setAccelerationX(0)  
+            if (this.player.facing == "right"){
+                this.player.play("standR")
+
+            } else{
+                this.player.play("standL")
+            }
         }
         
         
 
 
 
-        //Define scene controls (Game over, pause etc.)
 
-        //Scroll backround and start music loop
 
         
     }
@@ -194,7 +306,8 @@ class Play extends Phaser.Scene {
         this.enemySpeed += 10
         this.enemyAlive = true
         this.enemy.setMaxVelocity(this.enemySpeed * 2.5)
-
+        this.diffUp.play()
+        gameScore += 1;
 
     }
 
@@ -213,24 +326,33 @@ class Play extends Phaser.Scene {
     }
 
     gameOver(){
-        this.player.x = 0
+        this.player.setMaxVelocity(0)
+        this.player.x = 2000
         this.player.y = 0
+        this.player.alpha = 0
+        this.enemy.setMaxVelocity(0)
+        this.add.text(game.config.width/2, game.config.height/3, 'GAME OVER', this.textConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2, 'Score:', this.textConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2 + 30, gameScore, this.textConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height - 200, 'R to play again', this.textConfig).setOrigin(0.5)
+        this.gameEnd.play()
+        this.bgm.stop()
+    }
+    gameOverEnemyHandler(player){
+        player.alive = 0
     }
 
-    handleWorldBoundsCollision(gameObject, otherGameObject) {
-        console.log('Collided with world bounds!');
-        if (gameObject === this.player && otherGameObject.body.worldBounds) {
-          console.log('Collided with world bounds!');
-          gameObject.setTint(0xff0000); // Example: tint the colliding object red
-          // ... other actions ...
+    ground(player){
+        if (!player.anims.isPlaying) {
+            if (player.facing == "right"){
+                player.play('runR');
+            } else{
+                player.play('runL');
+            }
         }
-  
     }
 
 
 
-    //Collision function (One for enemy one for wall one for floor )
-
-    //TEMP Powerup tranisition and minigame scene
 
 }
