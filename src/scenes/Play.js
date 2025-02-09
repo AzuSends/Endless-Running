@@ -1,7 +1,4 @@
-/* TODO:
-Include some metric of accomplishment that a player can improve over time, e.g., score, survival time, etc. (1)
-Include in-game credits for all roles, assets, music, etc. (1)
-*/
+
 class Play extends Phaser.Scene {
     constructor() {
         super("playScene")
@@ -45,6 +42,15 @@ class Play extends Phaser.Scene {
             frameRate: 7, 
             repeat: 0
         });
+        this.anims.create({
+            key: 'loop',
+            frames: this.anims.generateFrameNumbers('enemy', {
+                start: 0, 
+                end: 8 
+            }),
+            frameRate: 7, 
+            repeat: -1
+        });
 
         this.bgm = this.sound.add('bgm', {
             volume: 0.5,
@@ -70,7 +76,7 @@ class Play extends Phaser.Scene {
         this.select.play();
         
         
-        this.starfield = this.add.tileSprite(0, 0, 1280, 720, 'starfield').setOrigin(0, 0)
+        this.starfield = this.add.tileSprite(0, 0, 1280, 720, 'stars').setOrigin(0, 0)
 
 
         this.player = this.physics.add.sprite(widthUI*5, heightUI*50, 'runner').setScale(.5,.5).setMaxVelocity(0);
@@ -80,17 +86,18 @@ class Play extends Phaser.Scene {
         
 
         this.enemySpeed = 50
-        this.enemy = this.physics.add.sprite(0,0,'enemy').setScale(.5,.5).setMaxVelocity(0).setOrigin(1,1);
+        this.enemy = this.physics.add.sprite(0,0,'enemy').setScale(.125,.125).setMaxVelocity(0).setOrigin(1,1);
+        this.enemy.play("loop")
         this.enemyAlive = true
         
 
 
 
-        this.building0 = this.physics.add.sprite(0, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false); //I tried working with groups for the buildings but doing the looping logic and adding variety over time became tedious since I was getting confused by acessing the group
-        this.building1 = this.physics.add.sprite(widthUI*22, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false); 
-        this.building2 = this.physics.add.sprite(widthUI*44, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
-        this.building3 = this.physics.add.sprite(widthUI*66, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
-        this.building4 = this.physics.add.sprite(widthUI*88, heightUI*55, 'building').setScale(6,20).setOrigin(0, 0).setPushable(false);
+        this.building0 = this.physics.add.sprite(0, heightUI*55, 'building').setScale(1.25,1.25).setOrigin(0, 0).setPushable(false); //I tried working with groups for the buildings but doing the looping logic and adding variety over time became tedious since I was getting confused by acessing the group
+        this.building1 = this.physics.add.sprite(widthUI*22, heightUI*55, 'building').setScale(1.25,1.25).setOrigin(0, 0).setPushable(false); 
+        this.building2 = this.physics.add.sprite(widthUI*44, heightUI*55, 'building').setScale(1.25,1.25).setOrigin(0, 0).setPushable(false);
+        this.building3 = this.physics.add.sprite(widthUI*66, heightUI*55, 'building').setScale(1.25,1.25).setOrigin(0, 0).setPushable(false);
+        this.building4 = this.physics.add.sprite(widthUI*88, heightUI*55, 'building').setScale(1.25,1.25).setOrigin(0, 0).setPushable(false);
 
         this.physics.add.collider(this.player, this.building0, this.ground);
         this.physics.add.collider(this.player, this.building1, this.ground);
@@ -335,6 +342,7 @@ class Play extends Phaser.Scene {
         this.add.text(game.config.width/2, game.config.height/2, 'Score:', this.textConfig).setOrigin(0.5)
         this.add.text(game.config.width/2, game.config.height/2 + 30, gameScore, this.textConfig).setOrigin(0.5)
         this.add.text(game.config.width/2, game.config.height - 200, 'R to play again', this.textConfig).setOrigin(0.5)
+        gameScore = 0
         this.gameEnd.play()
         this.bgm.stop()
     }

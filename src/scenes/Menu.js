@@ -4,12 +4,16 @@ class Menu extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('spaceship', './assets/spaceship.png')
-        this.load.image('starfield', './assets/starfield.png')
+        this.load.image('stars', './assets/stars.png')
+        this.load.image('building', './assets/building.png')
         this.load.spritesheet('runner', './assets/runner.png', {
           frameWidth: 70, 
           frameHeight: 90 
       });
+      this.load.spritesheet('enemy', './assets/enemy.png', {
+        frameWidth: 190, 
+        frameHeight: 190
+    });
 
       this.load.audio('bgm', './assets/bgm.wav');
       this.load.audio('diffUp', './assets/difficulty-up.wav');
